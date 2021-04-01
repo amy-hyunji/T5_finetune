@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 from transformers import T5Tokenizer
-from dataloader import Trivia_QA_Closedboo
+from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook
 from pytorch_lightning.loggers import WandbLogger
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
+    dataset = "hotpot",
     output_dir="", # path to save the checkpoints
     model_name_or_path='t5-base',
     tokenizer_name_or_path='t5-base',
@@ -46,12 +47,19 @@ args_dict = dict(
     seed=101,
 )
 
-args_dict.update({'output_dir': 't5_trivia_qa_closedbook', 'num_train_epochs':150,
-                 'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3,
-                 'resume_from_checkpoint': 't5_trivia_qa_closedbook/checkpointepoch=53.ckpt'})
+assert (args_dict['dataset'] in ['hotpot', 'trivia'])
+
+if args_dict['dataset'] == "trivia":
+    args_dict.update({'output_dir': 't5_trivia_qa_closedbook', 'num_train_epochs':150,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3,
+                     'resume_from_checkpoint': 't5_trivia_qa_closedbook/checkpointepoch=53.ckpt'})
+elif args_dict["dataset"] == "hotpot":
+    args_dict.update({'output_dir': 't5_hotpot_qa_closedbook', 'num_train_epochs': 150, 
+                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3,
+                    'resume_from_checkpoint': 't5_hotpot_qa_closedbook/checkpointepoch=0.ckpt'})
+
 args = argparse.Namespace(**args_dict)
 print(args_dict)
-
 
 ## Define Checkpoint function
 checkpoint_callback = pl.callbacks.ModelCheckpoint(
@@ -81,7 +89,10 @@ trainer = pl.Trainer(**train_params)
 trainer.fit(model)
 
 tokenizer = T5Tokenizer.from_pretrained('t5-base')
-dataset = Trivia_QA_Closedbook(tokenizer, 'validation', None, 25, 10, False)
+if args_dict['dataset'] == "trivia":
+    dataset = Trivia_QA_Closedbook(tokenizer, 'validation', None, 25, 10, False)
+elif args_dict['dataset'] == "hotpot":
+    dataset = Hotpot_QA_Closedbook(tokenizer, 'validation', None, 25, 10, False)
 
 loader = DataLoader(dataset, batch_size=32, shuffle=True)
 it = iter(loader)
