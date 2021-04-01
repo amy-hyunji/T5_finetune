@@ -4,10 +4,11 @@ import string
 import torch
 import sys
 import os
+import random
+import json
 import pytorch_lightning as pl
 import numpy as np
 
-from dataset import Trivia_QA_Closedbook, Hotpot_QA_Closedbook
 
 class LoggingCallback(pl.Callback):
     def on_validation_end(self, trainer, pl_module):
@@ -39,16 +40,6 @@ def set_seed(seed):
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-
-def get_dataset(tokenizer, type_path, num_samples, args):
-    if args.dataset == "trivia":  
-        return Trivia_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples,  input_length=args.max_input_length, 
-                        output_length=args.max_output_length)
-    elif args.dataset == "hotpot":
-        return Hotpot_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_lenth, 
-                        output_length=args.max_output_length)   
-    else:
-        sys.exit()
 
 def normalize_answer(s):
     """Lower text and remove punctuation, articles and extra whitespace."""

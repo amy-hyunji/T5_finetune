@@ -5,7 +5,8 @@ import pytorch_lightning as pl
 
 from torch.utils.data import Dataset, DataLoader, RandomSampler
 from pathlib import Path
-from utils import get_dataset, calculate_scores
+from dataloader import get_dataset
+from utils import calculate_scores
 from transformers import T5ForConditionalGeneration, T5Tokenizer, get_linear_schedule_with_warmup, Adafactor, AdamW
 
 class T5FineTuner(pl.LightningModule):
@@ -68,7 +69,7 @@ class T5FineTuner(pl.LightningModule):
             attention_mask=attention_mask,
             decoder_input_ids=decoder_input_ids,
             decoder_attention_mask=decoder_attention_mask,
-            lm_labels=lm_labels,
+            labels=lm_labels,
     )
 
     def _step(self, batch):
@@ -85,6 +86,7 @@ class T5FineTuner(pl.LightningModule):
         loss = outputs[0]
 
         return loss
+
     def ids_to_clean_text(self, generated_ids):
         gen_text = self.tokenizer.batch_decode(
             generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True

@@ -4,8 +4,10 @@ from torch.utils.data import Dataset, DataLoader
 from nlp import load_dataset
 from utils import load_hotpot
 
+
 class Trivia_QA_Closedbook(Dataset):
     def __init__(self, tokenizer, type_path, num_samples, input_length, output_length, print_text=False):         
+        super().__init__()
         self.dataset =  load_dataset('trivia_qa', 'unfiltered.nocontext', split=type_path)
         if num_samples:
             rand_indices = np.random.choice(self.dataset.shape[0], num_samples, replace=False)
@@ -62,15 +64,17 @@ class Trivia_QA_Closedbook(Dataset):
 class Hotpot_QA_Closedbook(Dataset):
     def __init__(self, tokenizer, type_path, num_samples, input_length, output_length, print_text=False):
         self.dataset = load_hotpot(type_path) # type_path = "train", "validation", "test"
+        """
         if num_samples:
-            rand_indices = np.random.choice(self.dataset.shape[0], num_samples, replace=False)
+            rand_indices = np.random.choice(len(self.dataset), num_samples, replace=False)
             self.dataset = self.dataset.select(list(rand_indices))
+        """
         self.input_length = input_length
         self.tokenizer = tokenizer
         self.output_length = output_length
         self.print_text = print_text 
     def __len__(self):
-        return self.dataset.shape[0]
+        return len(self.dataset)
     def clean_text(self, text):
         # text = text.replace('"', '')
         return text
@@ -91,4 +95,14 @@ class Hotpot_QA_Closedbook(Dataset):
         src_mask = source['attention_mask'].squeeze()
         target_mask = targets['attention_mask'].squeeze()
 
-        return {'source_ids': source_ids, 'source_mask': src_mask, 'target_ids': target_ids, 'target_mask': target_mask} 
+        return {'source_ids': source_ids, 'source_mask': src_mask, 'target_ids': target_ids, 'target_mask': target_mask}
+
+
+
+def get_dataset(tokenizer, type_path, num_samples, args):
+    if args.dataset == "trivia":
+        return Trivia_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length)
+    elif args.dataset == "hotpot":
+        return Hotpot_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length)
+    else:
+        sys.exit()

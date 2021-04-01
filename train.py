@@ -17,7 +17,7 @@ set_seed(42)
 logger = logging.getLogger(__name__)
 
 args_dict = dict(
-    wandb_key = "",
+    wandb_key = "edd7e4ba646b4766dd997806149e50cc6fba0906",
     dataset = "hotpot",
     output_dir="", # path to save the checkpoints
     model_name_or_path='t5-base',
@@ -55,8 +55,7 @@ if args_dict['dataset'] == "trivia":
                      'resume_from_checkpoint': 't5_trivia_qa_closedbook/checkpointepoch=53.ckpt'})
 elif args_dict["dataset"] == "hotpot":
     args_dict.update({'output_dir': 't5_hotpot_qa_closedbook', 'num_train_epochs': 150, 
-                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3,
-                    'resume_from_checkpoint': 't5_hotpot_qa_closedbook/checkpointepoch=0.ckpt'})
+                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)
@@ -73,7 +72,7 @@ train_params = dict(
     accumulate_grad_batches=args.gradient_accumulation_steps,
     gpus=args.n_gpu,
     max_epochs=args.num_train_epochs,
-    early_stop_callback=False,
+    #early_stop_callback=False,
     precision= 16 if args.fp_16 else 32,
     amp_level=args.opt_level,
     resume_from_checkpoint=args.resume_from_checkpoint,
