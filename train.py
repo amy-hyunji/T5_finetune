@@ -12,6 +12,7 @@ from pytorch_lightning.loggers import WandbLogger
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback
 
+
 set_seed(42)
 
 logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ train_params = dict(
     checkpoint_callback=checkpoint_callback,
     val_check_interval=args.val_check_interval,
     logger=wandb_logger,
-    callbacks=[LoggingCallback()],
+    callbacks=[LoggingCallback(logger)],
 )
 
 model = T5FineTuner(args)
