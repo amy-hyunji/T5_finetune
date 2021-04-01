@@ -3,6 +3,7 @@ import re
 import string
 import torch
 import sys
+import os
 import pytorch_lightning as pl
 import numpy as np
 
@@ -97,7 +98,7 @@ def load_hotpot(split):
     else:
         print("ERROR: check `type_path` in Hotpot_QA_closedbook")
         sys.exit(-1)
-    f = open(file)
+    f = open(os.path.join("hotpot",file))
     f_json = json.load(f)
     print(f"[HOTPOT] split = {split} / # of data: {len(f_json)}")
     
