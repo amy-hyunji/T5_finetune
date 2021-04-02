@@ -18,11 +18,11 @@ set_seed(42)
 logger = logging.getLogger(__name__)
 
 args_dict = dict(
-    wandb_key = "edd7e4ba646b4766dd997806149e50cc6fba0906",
+    wandb_key = "",
     dataset = "hotpot",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-base',
-    tokenizer_name_or_path='t5-base',
+    model_name_or_path='t5-large',
+    tokenizer_name_or_path='t5-large',
     max_input_length=25,
     max_output_length=10,
     freeze_encoder=False,
@@ -50,12 +50,18 @@ args_dict = dict(
 
 assert (args_dict['dataset'] in ['hotpot', 'trivia'])
 
+_model_name = args_dict['model_name_or_path'].split("/")
+if (len(_model_name)>1):
+    sub_name = f'{_model_name[-2]}_{_model_name[-1]}'
+else:
+    sub_name = _model_name[-1]
+
 if args_dict['dataset'] == "trivia":
-    args_dict.update({'output_dir': 't5_trivia_qa_closedbook', 'num_train_epochs':150,
+    args_dict.update({'output_dir': f'{_model_name}_trivia_qa_closedbook', 'num_train_epochs':150,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3,
                      'resume_from_checkpoint': 't5_trivia_qa_closedbook/checkpointepoch=53.ckpt'})
 elif args_dict["dataset"] == "hotpot":
-    args_dict.update({'output_dir': 't5_hotpot_qa_closedbook', 'num_train_epochs': 150, 
+    args_dict.update({'output_dir': f'{_model_name}_hotpot_qa_closedbook', 'num_train_epochs': 10, 
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
@@ -88,7 +94,7 @@ model = T5FineTuner(args)
 trainer = pl.Trainer(**train_params)
 trainer.fit(model)
 
-tokenizer = T5Tokenizer.from_pretrained('t5-base')
+tokenizer = T5Tokenizer.from_pretrained(args.tokenizer_name_or_path)
 if args_dict['dataset'] == "trivia":
     dataset = Trivia_QA_Closedbook(tokenizer, 'validation', None, 25, 10, False)
 elif args_dict['dataset'] == "hotpot":
