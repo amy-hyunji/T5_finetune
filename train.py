@@ -1,3 +1,4 @@
+import os
 import logging 
 import argparse
 import textwrap 
@@ -19,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "hotpot",
+    dataset = "trivia",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-large',
-    tokenizer_name_or_path='t5-large',
+    model_name_or_path='google/t5-large-ssm',
+    tokenizer_name_or_path='google/t5-large-ssm',
     max_input_length=25,
     max_output_length=10,
     freeze_encoder=False,
@@ -57,12 +58,12 @@ else:
     sub_name = _model_name[-1]
 
 if args_dict['dataset'] == "trivia":
-    args_dict.update({'output_dir': f'{_model_name}_trivia_qa_closedbook', 'num_train_epochs':150,
-                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3,
-                     'resume_from_checkpoint': 't5_trivia_qa_closedbook/checkpointepoch=53.ckpt'})
+    args_dict.update({'output_dir': f'{sub_name}_trivia_qa_closedbook', 'num_train_epochs':150,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 elif args_dict["dataset"] == "hotpot":
-    args_dict.update({'output_dir': f'{_model_name}_hotpot_qa_closedbook', 'num_train_epochs': 10, 
-                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
+    args_dict.update({'output_dir': f'{sub_name}_hotpot_qa_closedbook', 'num_train_epochs': 100, 
+                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3, 
+                    "resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)
@@ -94,37 +95,46 @@ model = T5FineTuner(args)
 trainer = pl.Trainer(**train_params)
 trainer.fit(model)
 
-tokenizer = T5Tokenizer.from_pretrained(args.tokenizer_name_or_path)
-if args_dict['dataset'] == "trivia":
-    dataset = Trivia_QA_Closedbook(tokenizer, 'validation', None, 25, 10, False)
-elif args_dict['dataset'] == "hotpot":
-    dataset = Hotpot_QA_Closedbook(tokenizer, 'validation', None, 25, 10, False)
+print("### Saving output ###")
+for split in ['validation', 'test']:
+    tokenizer = T5Tokenizer.from_pretrained(args.tokenizer_name_or_path)
+    if args_dict['dataset'] == "trivia":
+        dataset = Trivia_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+    elif args_dict['dataset'] == "hotpot":
+        dataset = Hotpot_QA_Closedbook(tokenizer, split, None, 25, 10, False)
 
-loader = DataLoader(dataset, batch_size=32, shuffle=True)
-it = iter(loader)
+    loader = DataLoader(dataset, batch_size=32, shuffle=True)
+    it = iter(loader)
 
-batch = next(it)
-batch["source_ids"].shape
+    batch = next(it)
+    batch["source_ids"].shape
 
-model.to('cuda')
-outs = model.model.generate(
-            batch["source_ids"].cuda(),
-            attention_mask=batch["source_mask"].cuda(),
-            use_cache=True,
-            decoder_attention_mask=batch['target_mask'].cuda(),
-            max_length=10,
-            num_beams=2,
-            early_stopping=True
-        )
+    model.to('cuda')
+    outs = model.model.generate(
+                batch["source_ids"].cuda(),
+                attention_mask=batch["source_mask"].cuda(),
+                use_cache=True,
+                decoder_attention_mask=batch['target_mask'].cuda(),
+                max_length=10,
+                num_beams=2,
+                early_stopping=True
+            )
 
-dec = [tokenizer.decode(ids) for ids in outs]
+    dec = [tokenizer.decode(ids) for ids in outs]
 
-texts = [tokenizer.decode(ids) for ids in batch['source_ids']]
-targets = [tokenizer.decode(ids) for ids in batch['target_ids']]
+    texts = [tokenizer.decode(ids) for ids in batch['source_ids']]
+    targets = [tokenizer.decode(ids) for ids in batch['target_ids']]
 
-for i in range(10):
-    lines = textwrap.wrap("Trivia Question:\n%s\n" % texts[i], width=100)
-    print("\n".join(lines))
-    print("\nActual Answer: %s" % targets[i])
-    print("\nPredicted Answer from T5: %s" % dec[i])
-    print("=====================================================================\n")
+    f = open(os.path.join(args.output_dir, f"output_{split}.txt"), "w")
+
+    for i in range(len(texts)):
+        lines = textwrap.wrap(f"{args.dataset} Question:\n%s\n" % texts[i], width=100)
+        print("\n".join(lines))
+        print("\nActual Answer: %s" % targets[i])
+        print("\nPredicted Answer from T5: %s" % dec[i])
+        print("=====================================================================\n")
+        f.write(f"\n{lines}")
+        f.write(f"\nActual Answer: {targets[i]}")
+        f.write(f"\nPredict Answer: {dec[i]}")
+
+    f.close()
