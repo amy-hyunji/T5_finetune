@@ -22,6 +22,16 @@ def load_valfile():
         valdict['question'].append(_val['question']) 
         valdict['answer'].append(_val['answer']) 
     val_df = pd.DataFrame(valdict)
+
+    bool_num = 0 
+    inside_num = 0
+    for _ques, _ans in zip(val_df['question'], val_df['answer']):
+        if _ans == "yes" or _ans == "no":
+            bool_num += 1
+        elif _ans in _ques:
+            inside_num += 1
+    print(f"[VAL] bool_num: {bool_num}, inside_num: {inside_num}")
+
     return val_df
 
 # compare two dfs - bool case
@@ -41,8 +51,11 @@ def compare_dfs_bool(df1, df2):
 def compare_dfs_non_bool(df1, df2):
     df1_question = list(df1['question'])
     df1_freq = list(df1['freq'])
+    df1_include = list(df1['inside'])
+    
     df2_question = list(df2['question'])
     df2_freq = list(df2['freq'])
+    df2_include = list(df2['inside'])
 
     df1_only = list(set(df1_question)-set(df2_question))
     df2_only = list(set(df2_question)-set(df1_question))
@@ -51,17 +64,23 @@ def compare_dfs_non_bool(df1, df2):
 
     # calculate avg(freq) - df1 only
     df1_freq_num = 0
+    df1_include_num = 0 
     for ques in df1_only:
         idx = df1_only.index(ques)
         df1_freq_num += df1_freq[idx]
+        if (df1_include[idx] == "T"): df1_include_num += 1
 
     df2_freq_num = 0
+    df2_include_num = 0 
     for ques in df2_only:
         idx = df2_only.index(ques)
         df2_freq_num += df2_freq[idx]
+        if (df2_include[idx] == "T"): df2_include_num += 1
 
     print(f"AVG of df1_only: {df1_freq_num/len(df1_only)}")
     print(f"AVG of df2_only: {df2_freq_num/len(df2_only)}")
+    print(f"# inside / df1_only: {df1_include_num}/{len(df1_only)}: {df1_include_num/len(df1_only)*100}")
+    print(f"# inside / df2_only: {df2_include_num}/{len(df2_only)}: {df2_include_num/len(df2_only)*100}")
     return
 
 def get_train_freq(train_df):
