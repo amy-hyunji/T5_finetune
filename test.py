@@ -4,17 +4,18 @@ import os
 import textwrap
 import logging 
 import pytorch_lightning as pl 
+import pandas as pd
 
 from transformers import AutoTokenizer, AutoModelWithLMHead
 from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook 
 from model import T5FineTuner 
-from utils import set_seed, LoggingCallback
+from utils import set_seed, LoggingCallback, exact_match_score
 from torch.utils.data import Dataset, DataLoader
 
 args_dict = dict(
-    model_name_or_path = "t5_hotpot_qa_closedbook/best_tfmr",
-    tokenizer_name_or_path = "t5_hotpot_qa_closedbook/best_tfmr",
-    output_name = "hotpot_t5_large",
+    model_name_or_path = "t5-base_hotpot_qa_closedbook/best_tfmr",
+    tokenizer_name_or_path = "t5-base_hotpot_qa_closedbook/best_tfmr",
+    output_name = "hotpot_t5_base",
     output_dir = "",
     dataset = "hotpot",
     max_input_length=25,
@@ -67,57 +68,44 @@ for split in ['validation']:
     elif args_dict['dataset'] == "hotpot":
         dataset = Hotpot_QA_Closedbook(tokenizer, split, None, 25, 10, False)
 
-    loader = DataLoader(dataset, batch_size=32, shuffle=True)
+    loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
+    #batch = next(it)
+    retdict = {'question': [], 'answer': [], 'predict': [], 'EM': []}
+    
+    for i, batch in enumerate(it):
+        batch["source_ids"].shape
 
-    batch = next(it)
-    batch["source_ids"].shape
+        model.to('cuda')
+        outs = model.model.generate(
+                    batch["source_ids"].cuda(),
+                    attention_mask=batch["source_mask"].cuda(),
+                    use_cache=True,
+                    decoder_attention_mask=batch['target_mask'].cuda(),
+                    max_length=10,
+                    num_beams=2,
+                    early_stopping=True
+                )
 
-    model.to('cuda')
-    outs = model.model.generate(
-                batch["source_ids"].cuda(),
-                attention_mask=batch["source_mask"].cuda(),
-                use_cache=True,
-                decoder_attention_mask=batch['target_mask'].cuda(),
-                max_length=10,
-                num_beams=2,
-                early_stopping=True
-            )
+        dec = [tokenizer.decode(ids, skip_special_tokens=True, clean_up_tokenization_spaces=True) for ids in outs]
 
-    dec = [tokenizer.decode(ids) for ids in outs]
+        texts = [tokenizer.decode(ids, skip_special_tokens=True, clean_up_tokenization_spaces=True) for ids in batch['source_ids']]
+        targets = [tokenizer.decode(ids, skip_special_tokens=True, clean_up_tokenization_spaces=True) for ids in batch['target_ids']]
 
-    texts = [tokenizer.decode(ids) for ids in batch['source_ids']]
-    targets = [tokenizer.decode(ids) for ids in batch['target_ids']]
 
-    f = open(f"{args.output_name}_{split}.txt", "w")
+        print(f"# of text: {len(retdict['question'])}\nSaving as: {args.output_name}_{split}.txt")
+        for i in range(len(texts)):
+            lines = textwrap.wrap(f"{args.dataset} Question:\n%s\n" % texts[i], width=100)
+            """
+            print("\n".join(lines))
+            print("\nActual Answer: %s" % targets[i])
+            print("\nPredicted Answer from T5: %s" % dec[i])
+            print("=====================================================================\n")
+            """
+            retdict['question'].append(texts[i])
+            retdict['answer'].append(targets[i])
+            retdict['predict'].append(dec[i])
+            retdict['EM'].append(exact_match_score(dec[i], targets[i]))
 
-    print(f"# of text: {len(texts)}\nSaving as: {args.output_name}_{split}.txt")
-    for i in range(len(texts)):
-        lines = textwrap.wrap(f"{args.dataset} Question:\n%s\n" % texts[i], width=100)
-        print("\n".join(lines))
-        print("\nActual Answer: %s" % targets[i])
-        print("\nPredicted Answer from T5: %s" % dec[i])
-        print("=====================================================================\n")
-        f.write(f"\n{lines}")
-        f.write(f"\nActual Answer: {targets[i]}")
-        f.write(f"\nPredict Answer: {dec[i]}")
-
-    f.close()
-
-"""
-text = "Mount Everest is found in which mountain range?"
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-preprocess_text = text.strip().replace("\n","")
-tokenized_text = tokenizer.encode(preprocess_text, return_tensors="pt").to(device)
-model = model.to(device)
-
-outs = model.model.generate(
-            tokenized_text,
-            max_length=10,
-            num_beams=2,
-            early_stopping=True
-           )
-
-dec = [tokenizer.decode(ids) for ids in outs]
-print("Predicted Answer: ", dec)
-"""
+    df = pd.DataFrame(retdict)
+    df.to_csv(f"{args.output_name}_{split}.csv")

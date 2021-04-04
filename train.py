@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "trivia",
+    dataset = "hotpot",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='google/t5-large-ssm',
-    tokenizer_name_or_path='google/t5-large-ssm',
+    model_name_or_path='t5-base',
+    tokenizer_name_or_path='t5-base',
     max_input_length=25,
     max_output_length=10,
     freeze_encoder=False,
@@ -61,9 +61,9 @@ if args_dict['dataset'] == "trivia":
     args_dict.update({'output_dir': f'{sub_name}_trivia_qa_closedbook', 'num_train_epochs':150,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 elif args_dict["dataset"] == "hotpot":
-    args_dict.update({'output_dir': f'{sub_name}_hotpot_qa_closedbook', 'num_train_epochs': 100, 
-                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3, 
-                    "resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
+    args_dict.update({'output_dir': f'{sub_name}_hotpot_qa_closedbook', 'num_train_epochs': 40, 
+                    'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
+                    #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)
