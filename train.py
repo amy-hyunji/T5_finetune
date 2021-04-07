@@ -13,17 +13,15 @@ from pytorch_lightning.loggers import WandbLogger
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback
 
-
-set_seed(42)
-
 logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
     dataset = "hotpot",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-base',
-    tokenizer_name_or_path='t5-base',
+    model_name_or_path='google/t5-small-ssm',
+    tokenizer_name_or_path='google/t5-small-ssm',
+    
     max_input_length=25,
     max_output_length=10,
     freeze_encoder=False,
@@ -49,21 +47,33 @@ args_dict = dict(
     seed=101,
 )
 
+set_seed(args_dict['seed'])  # 42
+
 assert (args_dict['dataset'] in ['hotpot', 'trivia'])
 
 _model_name = args_dict['model_name_or_path'].split("/")
 if (len(_model_name)>1):
-    sub_name = f'{_model_name[-2]}_{_model_name[-1]}'
+    if args_dict['add_all']:
+        sub_name = f'add_all_{_model_name[-2]}_{_model_name[-1]}'
+    else:
+        sub_name = f'{_model_name[-2]}_{_model_name[-1]}'
+
 else:
-    sub_name = _model_name[-1]
+    if args_dict['add_all']:
+        sub_name = f"add_all_{_model_name[-1]}"
+    else:
+        sub_name = _model_name[-1]
 
 if args_dict['dataset'] == "trivia":
-    args_dict.update({'output_dir': f'{sub_name}_trivia_qa_closedbook', 'num_train_epochs':150,
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_trivia_qa_closedbook", 'num_train_epochs':150,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 elif args_dict["dataset"] == "hotpot":
-    args_dict.update({'output_dir': f'{sub_name}_hotpot_qa_closedbook', 'num_train_epochs': 40, 
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_hotpot_qa_closedbook", 'num_train_epochs': 40, 
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
                     #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
+if args_dict['dataset'] == "complex":
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_trivia_qa_closedbook", 'num_train_epochs':150,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)

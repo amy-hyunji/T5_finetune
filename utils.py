@@ -90,6 +90,10 @@ def calculate_scores(predictions, ground_truths):
     subset_match_score /= len(predictions)
     return em_score*100, subset_match_score*100
 
+"""
+train # 90447
+val # 7405
+"""
 def load_hotpot(split):
     if split == "train":
         file = "hotpot_train_v1.1.json"
@@ -111,4 +115,43 @@ def load_hotpot(split):
         ret_list.append({'question': q, 'answer': a})
 
     assert(len(ret_list) == len(f_json))
+    return ret_list
+
+"""
+train set
+    * # = 27639
+    * answer > 1: 8129
+    * avglength(answer): 2.23
+val set
+    * # = 3531
+
+add_all: add all dataset // else: skip ones with > 1
+"""
+def load_complex(split, add_all=False):
+    basepath = "../complex_web_questions"
+    if split == "train":
+        file = os.path.join(basepath, "train.json")
+    elif split == "validation":
+        file = os.path.join(basepath, "dev.json")
+    elif split == "test":
+        file = os.path.join(basepath, "test.json")
+    else:
+        print("ERROR: check `type_path` in Complex_QA_closedbook")
+        sys.exit(-1)
+    f = open(file)
+    f_json = json.load(f)
+    print(f"[COMPLEX] split = {split} / # of data: {len(f_json)}")
+
+    ret_list = []
+    for elem in f_json:
+        q = elem['question']
+        ans_list = elem['answers']
+        for _ans in ans_list:
+            if not add_all and len(_ans)>1:
+                continue
+            else:
+                aliases = _ans['aliases']
+                answer = _ans['answer'] 
+                ret_list.append({'question': q, 'answer': answer, 'aliases': aliases})
+
     return ret_list
