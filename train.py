@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 from transformers import T5Tokenizer
-from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook
+from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook, Complex_QA_Closedbook
 from pytorch_lightning.loggers import WandbLogger
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback
@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "hotpot",
+    dataset = "complex",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='google/t5-small-ssm',
-    tokenizer_name_or_path='google/t5-small-ssm',
-    
+    model_name_or_path='t5-base',
+    tokenizer_name_or_path='t5-base',
+    add_all=True,
     max_input_length=25,
     max_output_length=10,
     freeze_encoder=False,
@@ -49,7 +49,7 @@ args_dict = dict(
 
 set_seed(args_dict['seed'])  # 42
 
-assert (args_dict['dataset'] in ['hotpot', 'trivia'])
+assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex'])
 
 _model_name = args_dict['model_name_or_path'].split("/")
 if (len(_model_name)>1):
@@ -106,12 +106,14 @@ trainer = pl.Trainer(**train_params)
 trainer.fit(model)
 
 print("### Saving output ###")
-for split in ['validation', 'test']:
+for split in ['validation']:
     tokenizer = T5Tokenizer.from_pretrained(args.tokenizer_name_or_path)
     if args_dict['dataset'] == "trivia":
         dataset = Trivia_QA_Closedbook(tokenizer, split, None, 25, 10, False)
     elif args_dict['dataset'] == "hotpot":
         dataset = Hotpot_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+    elif args_dict['dataset'] == "complex":
+        dataset = Complex_QA_Closedbook(tokenizer, split, None, 25, 10, False)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
     it = iter(loader)

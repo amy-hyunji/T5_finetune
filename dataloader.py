@@ -2,7 +2,7 @@ import numpy as np
 
 from torch.utils.data import Dataset, DataLoader
 from nlp import load_dataset
-from utils import load_hotpot
+from utils import load_hotpot, load_complex
 
 
 class Trivia_QA_Closedbook(Dataset):
@@ -137,10 +137,10 @@ class Complex_QA_Closedbook(Dataset):
 
 def get_dataset(tokenizer, type_path, num_samples, args):
     if args.dataset == "trivia":
-        return Trivia_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length, add_all=args.data_add_all)
+        return Trivia_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length, add_all=args.add_all)
     elif args.dataset == "hotpot":
-        return Hotpot_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length, add_all=args.data_add_all)
+        return Hotpot_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length, add_all=args.add_all)
     elif args.dataset == "complex":
-        return Complex_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length, add_all=args.data_add_all)
+        return Complex_QA_Closedbook(tokenizer=tokenizer, type_path=type_path, num_samples=num_samples, input_length=args.max_input_length, output_length=args.max_output_length, add_all=args.add_all)
     else:
         sys.exit()
