@@ -71,8 +71,8 @@ elif args_dict["dataset"] == "hotpot":
     args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_hotpot_qa_closedbook", 'num_train_epochs': 40, 
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
                     #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
-if args_dict['dataset'] == "complex":
-    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_trivia_qa_closedbook", 'num_train_epochs':150,
+elif args_dict['dataset'] == "complex":
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':150,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)

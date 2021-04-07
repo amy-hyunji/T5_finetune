@@ -7,15 +7,15 @@ import pytorch_lightning as pl
 import pandas as pd
 
 from transformers import AutoTokenizer, AutoModelWithLMHead
-from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook 
+from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook, Complex_QA_Closedbook 
 from model import T5FineTuner 
 from utils import set_seed, LoggingCallback, exact_match_score
 from torch.utils.data import Dataset, DataLoader
 
 args_dict = dict(
-    model_name_or_path = "t5-base_hotpot_qa_closedbook/best_tfmr",
-    tokenizer_name_or_path = "t5-base_hotpot_qa_closedbook/best_tfmr",
-    output_name = "hotpot_t5_base",
+    model_name_or_path = "101_t5-large_hotpot_qa_closedbook/best_tfmr",
+    tokenizer_name_or_path = "101_t5-large_hotpot_qa_closedbook/best_tfmr",
+    output_name = "101_hotpot_t5_base",
     output_dir = "",
     dataset = "hotpot",
     max_input_length=25,
@@ -51,6 +51,9 @@ elif args_dict["dataset"] == "hotpot":
     args_dict.update({'num_train_epochs': 100, 
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3, 
                     "resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
+elif args_dict['dataset'] == "complex":
+    args_dict.update({'num_train_epochs':150,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)
@@ -67,6 +70,8 @@ for split in ['validation']:
         dataset = Trivia_QA_Closedbook(tokenizer, split, None, 25, 10, False)
     elif args_dict['dataset'] == "hotpot":
         dataset = Hotpot_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+    elif args_dict['dataset'] == "complex":
+        dataset = Complex_QA_Closedbook(tokenizer, split, None, 25, 10, False)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
