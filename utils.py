@@ -146,13 +146,12 @@ def load_complex(split, add_all=False):
     for elem in f_json:
         q = elem['question']
         ans_list = elem['answers']
+        if (len(ans_list)>1 and not add_all):
+            continue
         for _ans in ans_list:
-            if not add_all and len(_ans)>1:
-                continue
-            else:
-                aliases = _ans['aliases']
-                answer = _ans['answer'] 
-                ret_list.append({'question': str(q), 'answer': str(answer), 'aliases': aliases})
+            aliases = _ans['aliases']
+            answer = _ans['answer'] 
+            ret_list.append({'question': str(q), 'answer': str(answer), 'aliases': aliases})
 
     print(" ")
     print("### Example ###")
