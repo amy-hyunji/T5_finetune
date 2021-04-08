@@ -4,7 +4,10 @@ Code for T5 finetune - closed book multihop QA
 
 Setting:
 ```
-pip install pytorch-lightning==0.9.0
+pytorch-lightning==0.9.0
+nlp
+wandb
+transformers
 ```
 possible models to use:
 * [t5-base (small/large/3b/11b)](https://huggingface.co/t5-base)
