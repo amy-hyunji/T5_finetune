@@ -8,6 +8,7 @@ pytorch-lightning==0.9.0
 nlp
 wandb
 transformers
+sentencepiece
 ```
 possible models to use:
 * [t5-base (small/large/3b/11b)](https://huggingface.co/t5-base)
