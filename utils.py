@@ -140,7 +140,6 @@ def load_complex(split, add_all=False):
         sys.exit(-1)
     f = open(file)
     f_json = json.load(f)
-    print(f"***** [COMPLEX] split = {split} / # of data: {len(f_json)}")
 
     ret_list = []
     for elem in f_json:
@@ -153,6 +152,7 @@ def load_complex(split, add_all=False):
             answer = _ans['answer'] 
             ret_list.append({'question': str(q), 'answer': str(answer), 'aliases': aliases})
 
+    print(f"***** [COMPLEX] split = {split} / # of data: {len(ret_list)}")
     print(" ")
     print("### Example ###")
     print(f"question: {ret_list[0]['question']}")
