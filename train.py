@@ -19,8 +19,8 @@ args_dict = dict(
     wandb_key = "",
     dataset = "complex",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-base',
-    tokenizer_name_or_path='t5-base',
+    model_name_or_path='t5-large',
+    tokenizer_name_or_path='t5-large',
     add_all=True,
     max_input_length=25,
     max_output_length=10,
@@ -65,14 +65,14 @@ else:
         sub_name = _model_name[-1]
 
 if args_dict['dataset'] == "trivia":
-    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_trivia_qa_closedbook", 'num_train_epochs':150,
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_trivia_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 elif args_dict["dataset"] == "hotpot":
-    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_hotpot_qa_closedbook", 'num_train_epochs': 40, 
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_hotpot_qa_closedbook", 'num_train_epochs': 100, 
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
                     #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
 elif args_dict['dataset'] == "complex":
-    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':150,
+    args_dict.update({'output_dir': f"error_fix_{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
