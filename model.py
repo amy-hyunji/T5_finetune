@@ -232,14 +232,14 @@ class T5FineTuner(pl.LightningModule):
         
         validation_dataset = get_dataset(tokenizer=self.tokenizer, type_path="validation", num_samples=n_samples, args=self.hparams)
         sampler=RandomSampler(validation_dataset)
-        return DataLoader(validation_dataset, batch_size=self.hparams.eval_batch_size, sampler =sampler, num_workers=4)
+        return DataLoader(validation_dataset, batch_size=self.hparams.eval_batch_size, sampler =sampler, num_workers=4, shuffle=False)
     
     
     def test_dataloader(self):
         n_samples = self.n_obs['test']
         test_dataset = get_dataset(tokenizer=self.tokenizer, type_path="test", num_samples=n_samples, args=self.hparams)
         
-        return DataLoader(test_dataset, batch_size=self.hparams.eval_batch_size, num_workers=4)
+        return DataLoader(test_dataset, batch_size=self.hparams.eval_batch_size, num_workers=4, shuffle=False)
     
     
     def on_save_checkpoint(self, checkpoint):

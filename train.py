@@ -35,6 +35,7 @@ args_dict = dict(
     num_train_epochs=2,
     gradient_accumulation_steps=10,
     n_gpu=1,
+    accelerator='ddp',
     resume_from_checkpoint=None, 
     val_check_interval = 0.5, 
     n_val=5000,
@@ -44,7 +45,7 @@ args_dict = dict(
     fp_16=False, # if you want to enable 16-bit training then install apex and set this to true
     opt_level='O1', # you can find out more on optimisation levels here https://nvidia.github.io/apex/amp.html#opt-levels-and-properties
     max_grad_norm=1.0, # if you enable 16-bit training then set this to a sensible value, 0.5 is a good default
-    seed=101,
+    seed=101
 )
 
 set_seed(args_dict['seed'])  # 42
@@ -52,11 +53,13 @@ set_seed(args_dict['seed'])  # 42
 assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex'])
 
 _model_name = args_dict['model_name_or_path'].split("/")
+print(_model_name)
+
 if (len(_model_name)>1):
     if args_dict['add_all']:
-        sub_name = f'add_all_{_model_name[-2]}_{_model_name[-1]}'
+        sub_name = f"add_all_{_model_name[-2]}_{_model_name[-1]}"
     else:
-        sub_name = f'{_model_name[-2]}_{_model_name[-1]}'
+        sub_name = f"{_model_name[-2]}_{_model_name[-1]}"
 
 else:
     if args_dict['add_all']:
@@ -89,6 +92,7 @@ wandb_logger = WandbLogger(project='closedbook-T5')
 train_params = dict(
     accumulate_grad_batches=args.gradient_accumulation_steps,
     gpus=args.n_gpu,
+    #accelerator=args.accelerator,
     max_epochs=args.num_train_epochs,
     #early_stop_callback=False,
     precision= 16 if args.fp_16 else 32,
@@ -115,7 +119,7 @@ for split in ['validation']:
     elif args_dict['dataset'] == "complex":
         dataset = Complex_QA_Closedbook(tokenizer, split, None, 25, 10, False)
 
-    loader = DataLoader(dataset, batch_size=32, shuffle=True)
+    loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
 
     batch = next(it)
