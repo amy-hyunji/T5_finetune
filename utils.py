@@ -145,7 +145,7 @@ def load_complex(split, add_all=False):
     for elem in f_json:
         q = elem['question']
         ans_list = elem['answers']
-        if (len(ans_list)>1 and not add_all):
+        if (len(ans_list)>1 and (not add_all or split == "validation")):
             continue
         for _ans in ans_list:
             aliases = _ans['aliases']
