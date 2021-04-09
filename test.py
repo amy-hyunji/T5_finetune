@@ -13,13 +13,14 @@ from utils import set_seed, LoggingCallback, exact_match_score
 from torch.utils.data import Dataset, DataLoader
 
 args_dict = dict(
-    model_name_or_path = "101_t5-large_hotpot_qa_closedbook/best_tfmr",
-    tokenizer_name_or_path = "101_t5-large_hotpot_qa_closedbook/best_tfmr",
-    output_name = "101_hotpot_t5_base",
+    model_name_or_path = "error_fix_101_t5-large_complex_qa_closedbook/best_tfmr",
+    tokenizer_name_or_path = "error_fix_101_t5-large_complex_qa_closedbook/best_tfmr",
+    output_name = "101_complex_t5_large",
     output_dir = "",
-    dataset = "hotpot",
-    max_input_length=25,
-    max_output_length=10,
+    add_all = True,
+    dataset = "complex",
+    max_input_length=50,
+    max_output_length=20,
     freeze_encoder=False,
     freeze_embeds=False,
     learning_rate=1e-5,
@@ -63,15 +64,15 @@ model = T5FineTuner(args)
 model.eval()
 #model = AutoModelWithLMHead.from_pretrained(args.model_name_or_path)
 
-for split in ['validation']:
+for split in ['test']:
     print(f"Working in {split}")
     
     if args_dict['dataset'] == "trivia":
-        dataset = Trivia_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+        dataset = Trivia_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False, args.add_all)
     elif args_dict['dataset'] == "hotpot":
-        dataset = Hotpot_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+        dataset = Hotpot_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False, args.add_all)
     elif args_dict['dataset'] == "complex":
-        dataset = Complex_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+        dataset = Complex_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False, args.add_all)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
@@ -87,7 +88,7 @@ for split in ['validation']:
                     attention_mask=batch["source_mask"].cuda(),
                     use_cache=True,
                     decoder_attention_mask=batch['target_mask'].cuda(),
-                    max_length=10,
+                    max_length=args.max_output_length,
                     num_beams=2,
                     early_stopping=True
                 )
@@ -113,4 +114,5 @@ for split in ['validation']:
             retdict['EM'].append(exact_match_score(dec[i], targets[i]))
 
     df = pd.DataFrame(retdict)
+    #df = df.sort_values(by=['question'], axis=0)
     df.to_csv(f"{args.output_name}_{split}.csv")

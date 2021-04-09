@@ -21,9 +21,9 @@ args_dict = dict(
     output_dir="", # path to save the checkpoints
     model_name_or_path='t5-large',
     tokenizer_name_or_path='t5-large',
-    add_all=False,
-    max_input_length=25,
-    max_output_length=10,
+    add_all=True,
+    max_input_length=50,
+    max_output_length=20,
     freeze_encoder=False,
     freeze_embeds=False,
     learning_rate=1e-5,
@@ -113,11 +113,11 @@ print("### Saving output ###")
 for split in ['validation']:
     tokenizer = T5Tokenizer.from_pretrained(args.tokenizer_name_or_path)
     if args_dict['dataset'] == "trivia":
-        dataset = Trivia_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+        dataset = Trivia_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
     elif args_dict['dataset'] == "hotpot":
-        dataset = Hotpot_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+        dataset = Hotpot_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
     elif args_dict['dataset'] == "complex":
-        dataset = Complex_QA_Closedbook(tokenizer, split, None, 25, 10, False)
+        dataset = Complex_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
