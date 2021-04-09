@@ -100,7 +100,8 @@ def load_hotpot(split):
     elif split == "validation":
         file = "hotpot_dev_fullwiki_v1.json"
     elif split == "test":
-        file = "hotpot_test_fullwiki_v1.json"
+        #file = "hotpot_test_fullwiki_v1.json"
+        file = "hotpot_dev_fullwiki_v1.json"
     else:
         print("ERROR: check `type_path` in Hotpot_QA_closedbook")
         sys.exit(-1)
@@ -127,14 +128,15 @@ val set
 
 add_all: add all dataset // else: skip ones with > 1
 """
-def load_complex(split, add_all=False):
+def load_complex(split, add_all):
     basepath = "../complex_web_questions"
     if split == "train":
         file = os.path.join(basepath, "train.json")
     elif split == "validation":
         file = os.path.join(basepath, "dev.json")
     elif split == "test":
-        file = os.path.join(basepath, "test.json")
+        #file = os.path.join(basepath, "test.json")
+        file = os.path.join(basepath, "dev.json")
     else:
         print("ERROR: check `type_path` in Complex_QA_closedbook")
         sys.exit(-1)
@@ -142,15 +144,22 @@ def load_complex(split, add_all=False):
     f_json = json.load(f)
 
     ret_list = []
+    q_list = []
     for elem in f_json:
         q = elem['question']
         ans_list = elem['answers']
-        if (len(ans_list)>1 and (not add_all or split == "validation")):
+        if ((len(ans_list)>1) and ((not add_all) or (split == "validation"))):
+            #print("skipping,,")
             continue
+        if (len(ans_list) == 0):
+            assert(False)
         for _ans in ans_list:
             aliases = _ans['aliases']
             answer = _ans['answer'] 
-            ret_list.append({'question': str(q), 'answer': str(answer), 'aliases': aliases})
+            ret_list.append({'question': str(q), 'answer': str(answer)})
+            q_list.append(str(q))
+
+    #assert (len(set(q_list)) ==  len(f_json))
 
     print(f"***** [COMPLEX] split = {split} / # of data: {len(ret_list)}")
     print(" ")

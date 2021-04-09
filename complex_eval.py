@@ -6,6 +6,7 @@ import re
 import pandas as pd
 
 
+# spans - predicted answers
 def compare_span_to_answer(spans, answers, question, question_annotated=None):
     """ Compares one answers to spans, multiple matches are possible
     """
@@ -41,8 +42,8 @@ def compare_span_to_answer(spans, answers, question, question_annotated=None):
 
         if answer in spans:
             exact_match_ind = spans.index(answer)
-            found_answers = found_answers.append({'span_index': exact_match_ind, 'answer': answer, 'span': answer},
-                                                 ignore_index=True)
+            found_answers = found_answers.append(
+                {'span_index': exact_match_ind, 'answer': answer, 'span': answer}, ignore_index=True)
 
         if pre_proc_answer in spans:
             exact_match_ind = spans.index(pre_proc_answer)
@@ -77,14 +78,17 @@ def evaluate(dataset_df, predictions):
     P1 = 0
     for prediction in predictions:
 
+        # aliases랑 answer 모두 golden_answer_list에 추기
         golden_answer_list = []
         for answer in dataset_df.loc[prediction['ID'],'answers']:
             golden_answer_list.append(answer['answer'])
             golden_answer_list += answer['aliases']
 
         if not None in golden_answer_list:
+            # compare_span_to_answer 해보기
             matched_answers = compare_span_to_answer([prediction['answer']], golden_answer_list,
                                                      dataset_df.loc[prediction['ID'], 'question'])
+            # compute_P1 해보기
             curr_P1 =  compute_P1(matched_answers, golden_answer_list, prediction['answer'])
 
             P1 += curr_P1
