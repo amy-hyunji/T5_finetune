@@ -17,14 +17,15 @@ answer: [{'aliases': ['Washington D.C.', 'Washington', 'The District', 'U.S. Cap
 def load_trainfile(remove_multi):
     trainfile = open("../complex_web_questions/train.json")
     trainjson = json.load(trainfile)
-    traindict = {'question': [], 'answers': []}
+    traindict = {'question': [], 'answer': []}
     for _train in trainjson:
         if remove_multi and len(_train['answers'])>1:
             continue
         else:
             traindict['question'].append(_train['question'])
-            traindict['answer'].append(_train['answer'])
+            traindict['answer'].append(_train['answers'])
     train_df = pd.DataFrame(traindict)
+    print(f"[remove_multi: {remove_multi}] # of train question: {len(traindict['question'])}")
     return train_df
 
 def load_valfile(remove_multi):
@@ -197,6 +198,28 @@ def cal_EM(retdict):
     print(f"aliases: {aliases} // {aliases/total_num*100}")
     print(f"**************")    
 
+def check_overlap_btw_val_train(train_df, val_df):
+    train_ques = set(train_df['question'])
+    val_ques = set(val_df['question'])
+    train_ans = list() 
+    val_ans = list() 
+
+    for ans in train_df['answer']:
+        train_ans.append(ans[0]['answer']) 
+
+    for ans in val_df['answer']:
+        val_ans.append(ans[0]['answer'])
+
+    train_ans = set(train_ans)
+    val_ans = set(val_ans)
+
+    ques_intersect = train_ques.intersection(val_ques)
+    ans_intersect = train_ans.intersection(val_ans)
+
+    print("*** check btw train and val ***")
+    print(f"[Overlap in question]: {len(ques_intersect)}")
+    print(f"[Overlap in answer]: {len(ans_intersect)}")
+    print(" ")
 
 if __name__ == "__main__":
 
@@ -207,6 +230,8 @@ if __name__ == "__main__":
 
     train_df = load_trainfile(remove_multi)
     val_df = load_valfile(remove_multi)
+    check_overlap_btw_val_train(train_df, val_df)
+
     retdict = group_multi(ans_df, val_df, remove_multi)
 
     # calculate avg P1
