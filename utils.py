@@ -129,7 +129,7 @@ val set
 add_all: add all dataset // else: skip ones with > 1
 """
 def load_complex(split, add_all):
-    basepath = "../complex_web_questions"
+    basepath = "./complex_web_questions"
     if split == "train":
         file = os.path.join(basepath, "train.json")
     elif split == "validation":
@@ -155,6 +155,7 @@ def load_complex(split, add_all):
             answer = ans_list[ans_num]['answer']
             ret_list.append({'question': str(q), 'answer': str(answer)})
             q_list.append(str(q))
+            continue
         if (len(ans_list) == 0):
             assert(False)
         for _ans in ans_list:
