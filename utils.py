@@ -149,8 +149,12 @@ def load_complex(split, add_all):
         q = elem['question']
         ans_list = elem['answers']
         if ((len(ans_list)>1) and ((not add_all) or (split == "validation"))):
-            #print("skipping,,")
-            continue
+            # instead of skipping add the random one
+            # continue
+            ans_num = random.randint(0, len(ans_list)-1)
+            answer = ans_list[ans_num]['answer']
+            ret_list.append({'question': str(q), 'answer': str(answer)})
+            q_list.append(str(q))
         if (len(ans_list) == 0):
             assert(False)
         for _ans in ans_list:
