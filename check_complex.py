@@ -205,10 +205,12 @@ def check_overlap_btw_val_train(train_df, val_df):
     val_ans = list() 
 
     for ans in train_df['answer']:
-        train_ans.append(ans[0]['answer']) 
+        for elem in ans:
+            train_ans.append(elem['answer']) 
 
     for ans in val_df['answer']:
-        val_ans.append(ans[0]['answer'])
+        for elem in ans:
+            val_ans.append(elem['answer'])
 
     train_ans = set(train_ans)
     val_ans = set(val_ans)
@@ -239,6 +241,7 @@ if __name__ == "__main__":
     for p in retdict['score']:
         P1 += p
     print(f"Total # of questions: {len(retdict['score'])}")
+    print(f"P1: {P1}")
     print(f"AVG P1: {P1/len(retdict['score'])}")
 
     if remove_multi:
