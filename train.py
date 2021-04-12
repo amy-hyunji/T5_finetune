@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "complex",
+    dataset = "hotpot",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-large',
-    tokenizer_name_or_path='t5-large',
-    add_all=True,
+    model_name_or_path='t5-base',
+    tokenizer_name_or_path='t5-base',
+    add_all=False,
     max_input_length=50,
     max_output_length=20,
     freeze_encoder=False,
@@ -45,7 +45,7 @@ args_dict = dict(
     fp_16=False, # if you want to enable 16-bit training then install apex and set this to true
     opt_level='O1', # you can find out more on optimisation levels here https://nvidia.github.io/apex/amp.html#opt-levels-and-properties
     max_grad_norm=1.0, # if you enable 16-bit training then set this to a sensible value, 0.5 is a good default
-    seed=101
+    seed=42
 )
 
 set_seed(args_dict['seed'])  # 42
