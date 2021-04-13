@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "hotpot",
+    dataset = "qangaroo",
     output_dir="", # path to save the checkpoints
     model_name_or_path='t5-base',
     tokenizer_name_or_path='t5-base',
@@ -75,10 +75,10 @@ elif args_dict["dataset"] == "hotpot":
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
                     #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
 elif args_dict['dataset'] == "complex":
-    args_dict.update({'output_dir': f"error_fix_{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 elif args_dict['dataset'] == "qangaroo":
-    args_dict.update({'output_dir': f"error_fix_{args_dict['seed']}_{sub_name}_qangaroo_qa_closedbook", 'num_train_epochs':100,
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_qangaroo_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)

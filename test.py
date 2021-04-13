@@ -19,7 +19,7 @@ args_dict = dict(
     output_dir = "",
     add_all = True,
     dataset = "complex",
-    max_input_length=50,
+    max_input_length=60,
     max_output_length=20,
     freeze_encoder=False,
     freeze_embeds=False,
@@ -55,6 +55,9 @@ elif args_dict["dataset"] == "hotpot":
 elif args_dict['dataset'] == "complex":
     args_dict.update({'num_train_epochs':150,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
+elif args_dict['dataset'] == "qangaroo":
+    args_dict.update({'num_train_epochs':150,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)
@@ -73,6 +76,8 @@ for split in ['test']:
         dataset = Hotpot_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False, args.add_all)
     elif args_dict['dataset'] == "complex":
         dataset = Complex_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False, args.add_all)
+    elif args_dict['dataset'] == "qangaroo":
+        dataset = Qangaroo_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False, args.add_all)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)

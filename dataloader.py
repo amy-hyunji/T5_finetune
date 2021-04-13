@@ -136,7 +136,7 @@ class Complex_QA_Closedbook(Dataset):
 
 class Qangaroo_QA_Closedbook(Dataset):
     def __init__(self, tokenizer, type_path, num_samples, input_length, output_length, print_text=False, add_all=False):
-        self.dataset = load_qangaroo(type_path) # type_path = "train", "validation", "test"
+        self.dataset = load_qangaroo(type_path, add_all) # type_path = "train", "validation", "test"
         """
         if num_samples:
             rand_indices = np.random.choice(len(self.dataset), num_samples, replace=False)
