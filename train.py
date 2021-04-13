@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "hotpot",
+    dataset = "complex",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-base',
-    tokenizer_name_or_path='t5-base',
+    model_name_or_path='t5-large',
+    tokenizer_name_or_path='t5-large',
     add_all=False,
     max_input_length=50,
     max_output_length=20,
@@ -45,7 +45,7 @@ args_dict = dict(
     fp_16=False, # if you want to enable 16-bit training then install apex and set this to true
     opt_level='O1', # you can find out more on optimisation levels here https://nvidia.github.io/apex/amp.html#opt-levels-and-properties
     max_grad_norm=1.0, # if you enable 16-bit training then set this to a sensible value, 0.5 is a good default
-    seed=42
+    seed=101
 )
 
 set_seed(args_dict['seed'])  # 42
@@ -75,7 +75,7 @@ elif args_dict["dataset"] == "hotpot":
                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
                     #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
 elif args_dict['dataset'] == "complex":
-    args_dict.update({'output_dir': f"error_fix_{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
