@@ -172,3 +172,32 @@ def load_complex(split, add_all):
     print(f"question: {ret_list[0]['question']}")
     print(f"answer: {ret_list[0]['answer']}")
     return ret_list
+
+"""
+run QAngaroo/preprocess.py first
+"""
+
+def load_qangaroo(split, add_all):
+    basepath = "./QAngaroo/"
+
+    ret_list = []
+    if split == "train":
+        df = pd.read_csv(os.path.join(basepath, "train.csv")) 
+    elif split == "validation":
+        df = pd.read_csv(os.path.join(basepath, "val.csv"))
+    elif split == "test":
+        df = pd.read_csv(os.path.join(basepath, "val.csv"))
+    else:
+        print("ERROR: check 'type_path` in Complex_QA_closedbook")
+        sys.exit(-1)
+
+    ret_list = []
+    for (ques, ans) in zip(df['question'], df['answer']):
+        ret_list.append({'question': str(ques), 'answer': str(ans)})
+
+    print(f"***** [QANGAROO] split = {split} / # of data: {len(ret_list)}")
+    print(" ")
+    print("### Example ###")
+    print(f"question: {ret_list[0]['question']}")
+    print(f"answer: {ret_list[0]['answer']}")
+    return ret_list
