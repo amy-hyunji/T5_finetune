@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 from transformers import T5Tokenizer
-from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook, Complex_QA_Closedbook
+from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook, Complex_QA_Closedbook, Qangaroo_QA_Closedbook
 from pytorch_lightning.loggers import WandbLogger
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback
@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 
 args_dict = dict(
     wandb_key = "",
-    dataset = "complex",
+    dataset = "qangaroo",
     output_dir="", # path to save the checkpoints
     model_name_or_path='t5-large',
     tokenizer_name_or_path='t5-large',
     add_all=False,
-    max_input_length=50,
+    max_input_length=60,
     max_output_length=20,
     freeze_encoder=False,
     freeze_embeds=False,
@@ -50,7 +50,7 @@ args_dict = dict(
 
 set_seed(args_dict['seed'])  # 42
 
-assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex'])
+assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex', 'qangaroo'])
 
 _model_name = args_dict['model_name_or_path'].split("/")
 print(_model_name)
@@ -76,6 +76,9 @@ elif args_dict["dataset"] == "hotpot":
                     #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
 elif args_dict['dataset'] == "complex":
     args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
+elif args_dict['dataset'] == "qangaroo":
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_qangaroo_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
@@ -118,6 +121,8 @@ for split in ['validation']:
         dataset = Hotpot_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
     elif args_dict['dataset'] == "complex":
         dataset = Complex_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
+    elif args_dict['dataset'] == "qangaroo":
+        dataset = Qangaroo_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
