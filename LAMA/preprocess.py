@@ -44,7 +44,8 @@ def load_jsonl(input_path) -> list:
 
 if __name__ == "__main__":
     filelist = ['ConceptNet', 'Google_RE', 'Squad', 'TREx']
-
+    elem_num = {'ConceptNet': 0, 'Google_RE': 0, 'Squad': 0, 'TREx': 0}
+    
     # get all dataset - first get only the questions to remove duplicates!
     question_list = []
     question_answer_set = dict()
@@ -55,6 +56,7 @@ if __name__ == "__main__":
                 if file == "TREx":
                     # iterate through 'evidences'
                     for elem in _data['evidences']:
+                        elem_num['TREx'] += 1
                         question_list.append(elem['masked_sentence'])
                         question_answer_set[elem['masked_sentence']] = elem['obj_surface']
                 else:
@@ -62,9 +64,11 @@ if __name__ == "__main__":
                     if (len(_data['masked_sentences'])>1):
                         continue
                     else:
+                        elem_num[file] += 1
                         question_list.append(_data['masked_sentences'][0])
                         question_answer_set[_data['masked_sentences'][0]] = _data['obj_label']
-
+    print(elem_num)
+    
     print(f"Before removing dup: {len(question_list)}") #1339420
     question_list = list(set(question_list))
     print(f"After removing dup: {len(question_list)}") #880541
