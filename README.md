@@ -7,6 +7,7 @@ Code for T5 finetune - closed book multihop QA
 * Hotpot
 * ComplexWebQuestion
 * QAngaroo (MedHop/WikiHop)
+* LAMA
 
 ## Setting:
 ```
