@@ -28,5 +28,4 @@ sentencepiece
 * base code from [closedbook-triviaQA](https://github.com/priya-dwivedi/Deep-Learning/blob/master/trivia-bot-t5/T5-ClosedBook-TriviaQA-Github.ipynb)
 
 ## ETC
-### QAngaroo
-* needed keys inside .json - ['id', 'query', 'answer', 'candidates']
+
