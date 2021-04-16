@@ -220,7 +220,7 @@ if __name__ == "__main__":
     print("="*40)
     # keys: [question, answer, predict, EM]
     #t5_base = pd.read_csv("hotpot_t5_base_split.csv")
-    t5_base = pd.read_csv("101_hotpot_t5_base_validation.csv")
+    t5_base = pd.read_csv("42_t5-base_hotpot_qa_test.csv")
     print("[BASE] Get only the correct ones")
     base_bool_df, base_non_bool_df = get_em_one(t5_base)
     # get freq of answer in trainset (w/bool) : [-1, 1, +1] 
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     print("")
 
     print("="*40)
-    t5_large = pd.read_csv("hotpot_t5_large_split.csv")
+    t5_large = pd.read_csv("101_t5-base_hotpot_qa_test.csv")
     #t5_large = pd.read_csv("101_hotpot_t5_large_validation.csv")
     print("[LARGE] Get only the correct ones")
     large_bool_df, large_non_bool_df = get_em_one(t5_large)
