@@ -13,12 +13,12 @@ from utils import set_seed, LoggingCallback, exact_match_score
 from torch.utils.data import Dataset, DataLoader
 
 args_dict = dict(
-    model_name_or_path = "error_fix_101_add_all_t5-large_complex_qa_closedbook/best_tfmr",
-    tokenizer_name_or_path = "error_fix_101_add_all_t5-large_complex_qa_closedbook/best_tfmr",
-    output_name = "101_add_all_complex_t5_large",
+    model_name_or_path = "ckpts/101_t5-large_lama_qa_closedbook/best_tfmr",
+    tokenizer_name_or_path = "ckpts/101_t5-large_lama_qa_closedbook/best_tfmr",
+    output_name = "101_single_only_lama_t5_large",
     output_dir = "",
     add_all = True,
-    dataset = "complex",
+    dataset = "lama",
     max_input_length=60,
     max_output_length=20,
     freeze_encoder=False,
