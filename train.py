@@ -92,7 +92,7 @@ checkpoint_callback = pl.callbacks.ModelCheckpoint(
     filepath=args.output_dir, prefix="checkpoint", monitor="em_score", mode="max", save_top_k=1
 )
 
-wandb_logger = WandbLogger(project=f'closedbook-T5-{args.dataset}')
+wandb_logger = WandbLogger(project='closedbook-T5')
 
 ## If resuming from checkpoint, add an arg resume_from_checkpoint
 train_params = dict(

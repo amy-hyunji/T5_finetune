@@ -49,6 +49,7 @@ if __name__ == "__main__":
     # get all dataset - first get only the questions to remove duplicates!
     question_list = []
     question_answer_set = dict()
+    question_filetype_set = dict()
     for file in filelist:
         for _file in os.listdir(file):
             data = load_jsonl(os.path.join(file, _file))
@@ -59,6 +60,7 @@ if __name__ == "__main__":
                         elem_num['TREx'] += 1
                         question_list.append(elem['masked_sentence'])
                         question_answer_set[elem['masked_sentence']] = elem['obj_surface']
+                        question_filetype_set[elem['masked_sentence']] = "TREx"
                 else:
                     # cases with multiple masked_sentences exists - remove: too long!
                     if (len(_data['masked_sentences'])>1):
@@ -67,6 +69,8 @@ if __name__ == "__main__":
                         elem_num[file] += 1
                         question_list.append(_data['masked_sentences'][0])
                         question_answer_set[_data['masked_sentences'][0]] = _data['obj_label']
+                        question_filetype_set[_data['masked_sentences'][0]] = file 
+    
     print(elem_num)
     
     print(f"Before removing dup: {len(question_list)}") #1339420
@@ -74,20 +78,26 @@ if __name__ == "__main__":
     print(f"After removing dup: {len(question_list)}") #880541
 
     answer_list = []
+    type_list = []
     for ques in question_list:
         answer_list.append(question_answer_set[ques])
-    
-    assert(len(answer_list) == len(question_list))
+        type_list.append(question_filetype_set[ques])
 
-    df = pd.DataFrame({'question': question_list, 'answer': answer_list})
+    assert(len(answer_list) == len(question_list) == len(type_list))
+
+    df = pd.DataFrame({'question': question_list, 'answer': answer_list, 'type': type_list})
     df = df.sample(frac=1).reset_index(drop=True)
     
     question = df['question']
     answer = df['answer']
+    type = df['type']
     train_num = int(len(question)*0.9)
 
-    train_df = pd.DataFrame({'question': question[:train_num], 'answer': answer[:train_num]})
-    val_df = pd.DataFrame({'question': question[train_num:], 'answer': answer[train_num:]})
+    train_df = pd.DataFrame({'question': question[:train_num], 'answer': answer[:train_num], 'type': type[:train_num]})
+    val_df = pd.DataFrame({'question': question[train_num:], 'answer': answer[train_num:], 'type': type[train_num:]})
+
+    # print details of train / val
+    
 
     train_df.to_csv("train.csv")
     val_df.to_csv("val.csv")
