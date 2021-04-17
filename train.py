@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 from transformers import T5Tokenizer
-from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook, Complex_QA_Closedbook, Qangaroo_QA_Closedbook
+from dataloader import Trivia_QA_Closedbook, Hotpot_QA_Closedbook, Complex_QA_Closedbook, Qangaroo_QA_Closedbook, LAMA_QA_Closedbook
 from pytorch_lightning.loggers import WandbLogger
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback
@@ -19,8 +19,8 @@ args_dict = dict(
     wandb_key = "",
     dataset = "qangaroo",
     output_dir="", # path to save the checkpoints
-    model_name_or_path='t5-large',
-    tokenizer_name_or_path='t5-large',
+    model_name_or_path='t5-base',
+    tokenizer_name_or_path='t5-base',
     add_all=False,
     max_input_length=60,
     max_output_length=20,
@@ -50,7 +50,7 @@ args_dict = dict(
 
 set_seed(args_dict['seed'])  # 42
 
-assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex', 'qangaroo'])
+assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex', 'qangaroo', 'lama'])
 
 _model_name = args_dict['model_name_or_path'].split("/")
 print(_model_name)
@@ -80,6 +80,9 @@ elif args_dict['dataset'] == "complex":
 elif args_dict['dataset'] == "qangaroo":
     args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_qangaroo_qa_closedbook", 'num_train_epochs':100,
                      'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
+elif args_dict['dataset'] == "lama":
+    args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_lama_qa_closedbook", 'num_train_epochs':100,
+                     'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
 
 args = argparse.Namespace(**args_dict)
 print(args_dict)
@@ -89,7 +92,7 @@ checkpoint_callback = pl.callbacks.ModelCheckpoint(
     filepath=args.output_dir, prefix="checkpoint", monitor="em_score", mode="max", save_top_k=1
 )
 
-wandb_logger = WandbLogger(project='closedbook-T5')
+wandb_logger = WandbLogger(project=f'closedbook-T5-{args.dataset}')
 
 ## If resuming from checkpoint, add an arg resume_from_checkpoint
 train_params = dict(
@@ -123,6 +126,8 @@ for split in ['validation']:
         dataset = Complex_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
     elif args_dict['dataset'] == "qangaroo":
         dataset = Qangaroo_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
+    elif args_dict['dataset'] == "lama":
+        dataset = LAMA_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
