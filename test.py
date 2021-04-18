@@ -19,12 +19,12 @@ from utils import set_seed, LoggingCallback, exact_match_score
 from torch.utils.data import Dataset, DataLoader
 
 args_dict = dict(
-    model_name_or_path = "ckpts/101_t5-large_lama_qa_closedbook/best_tfmr",
-    tokenizer_name_or_path = "ckpts/101_t5-large_lama_qa_closedbook/best_tfmr",
-    output_name = "101_single_only_lama_t5_large",
-    output_dir = "",
-    add_all = True,
-    dataset = "lama",
+    model_name_or_path="101_t5-base_qangaroo_qa_closedbook/best_tfmr",
+    tokenizer_name_or_path="101_t5-base_qangaroo_qa_closedbook/best_tfmr",
+    output_name="101-qangaroo-t5-base",
+    output_dir="",
+    add_all=True,
+    dataset="qangaroo",
     max_input_length=60,
     max_output_length=20,
     freeze_encoder=False,
@@ -219,4 +219,4 @@ for split in ["test"]:
 
     df = pd.DataFrame(retdict)
     # df = df.sort_values(by=['question'], axis=0)
-    df.to_csv(f"{args.output_name}_{split}.csv")
+    df.to_csv(f"results/{args.output_name}_{split}.csv")
