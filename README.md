@@ -8,6 +8,7 @@ Code for T5 finetune - closed book multihop QA
 * ComplexWebQuestion
 * QAngaroo (MedHop/WikiHop)
 * LAMA
+* [SearchQA](https://github.com/nyu-dl/dl4ir-searchQA)
 
 ## Setting:
 ```
