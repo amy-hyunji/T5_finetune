@@ -43,7 +43,7 @@ def load_jsonl(input_path) -> list:
     return data
 
 if __name__ == "__main__":
-    filelist = ['ConceptNet', 'Google_RE', 'Squad', 'TREx']
+    filelist = ['ConceptNet', 'Google_RE', 'Squad']
     elem_num = {'ConceptNet': 0, 'Google_RE': 0, 'Squad': 0, 'TREx': 0}
     
     # get all dataset - first get only the questions to remove duplicates!
