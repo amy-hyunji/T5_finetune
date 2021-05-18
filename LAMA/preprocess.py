@@ -1,3 +1,18 @@
+"""
+trex_setting == 'only_one'
+before removing dup - 69068
+after removing dup - 50517
+
+trex_setting = 'none'
+before removing dup - 
+after removing dup - 
+
+trex_setting = 'add_all'
+before removing dup - 
+after removing dup - 
+
+"""
+
 import json
 import os
 import pandas as pd
@@ -43,7 +58,10 @@ def load_jsonl(input_path) -> list:
     return data
 
 if __name__ == "__main__":
-    filelist = ['ConceptNet', 'Google_RE', 'Squad']
+
+    trex_setting = "only_one" # ['only_one', 'add_all', 'none']
+
+    filelist = ['ConceptNet', 'Google_RE', 'Squad', 'TREx']
     elem_num = {'ConceptNet': 0, 'Google_RE': 0, 'Squad': 0, 'TREx': 0}
     
     # get all dataset - first get only the questions to remove duplicates!
@@ -55,12 +73,21 @@ if __name__ == "__main__":
             data = load_jsonl(os.path.join(file, _file))
             for _data in data:
                 if file == "TREx":
-                    # iterate through 'evidences'
-                    for elem in _data['evidences']:
+                    if trex_setting == "none":
+                        continue
+                    elif trex_setting == "only_one":
+                        elem = _data['evidences'][0]
                         elem_num['TREx'] += 1
                         question_list.append(elem['masked_sentence'])
                         question_answer_set[elem['masked_sentence']] = elem['obj_surface']
-                        question_filetype_set[elem['masked_sentence']] = "TREx"
+                        question_filetype_set[elem['masked_sentence']] = 'TREx'
+                    elif trex_setting == "add_all":
+                        # iterate through 'evidences'
+                        for elem in _data['evidences']:
+                            elem_num['TREx'] += 1
+                            question_list.append(elem['masked_sentence'])
+                            question_answer_set[elem['masked_sentence']] = elem['obj_surface']
+                            question_filetype_set[elem['masked_sentence']] = "TREx"
                 else:
                     # cases with multiple masked_sentences exists - remove: too long!
                     if (len(_data['masked_sentences'])>1):
@@ -99,5 +126,5 @@ if __name__ == "__main__":
     # print details of train / val
     
 
-    train_df.to_csv("train.csv")
-    val_df.to_csv("val.csv")
+    train_df.to_csv(f"{trex_setting}_train.csv")
+    val_df.to_csv(f"{trex_setting}_val.csv")

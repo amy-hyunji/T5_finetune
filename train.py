@@ -14,18 +14,21 @@ from model import T5FineTuner
 from utils import set_seed, LoggingCallback
 from knockknock import slack_sender
 
-webhook_url = ""
+webhook_url = "https://hooks.slack.com/services/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"
 @slack_sender(webhook_url=webhook_url, channel="train-chat")
 def main():
     logger = logging.getLogger(__name__)
 
     args_dict = dict(
         wandb_key = "",
-        dataset = "lama",
+        wandb_name = "cwq_base_multi",
+        dataset = "complex",
         output_dir="", # path to save the checkpoints
         model_name_or_path='t5-base',
         tokenizer_name_or_path='t5-base',
-        add_all=False,
+        #model_name_or_path='./pretrain_ssm/t5-base-complexQA-ssm-epoch19',
+        #tokenizer_name_or_path='./pretrain_ssm/t5-base-complexQA-ssm-epoch19',
+        add_all=True,
         max_input_length=60,
         max_output_length=20,
         freeze_encoder=False,
@@ -36,7 +39,7 @@ def main():
         warmup_steps=0,
         train_batch_size=4,
         eval_batch_size=4,
-        num_train_epochs=2,
+        num_train_epochs=6,
         gradient_accumulation_steps=10,
         n_gpu=1,
         accelerator='ddp',
@@ -49,12 +52,12 @@ def main():
         fp_16=False, # if you want to enable 16-bit training then install apex and set this to true
         opt_level='O1', # you can find out more on optimisation levels here https://nvidia.github.io/apex/amp.html#opt-levels-and-properties
         max_grad_norm=1.0, # if you enable 16-bit training then set this to a sensible value, 0.5 is a good default
-        seed=101
+        seed=42
     )
 
     set_seed(args_dict['seed'])  # 42
 
-    assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex', 'qangaroo', 'lama'])
+    assert (args_dict['dataset'] in ['hotpot', 'trivia', 'complex', 'qangaroo', 'lama', 'search'])
 
     _model_name = args_dict['model_name_or_path'].split("/")
     print(_model_name)
@@ -75,21 +78,21 @@ def main():
         args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_trivia_qa_closedbook", 'num_train_epochs':100,
                          'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
     elif args_dict["dataset"] == "hotpot":
-        args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_hotpot_qa_closedbook", 'num_train_epochs': 100, 
+        args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_hotpot_qa_closedbook", 'num_train_epochs': 10, 
                         'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3}) 
                         #"resume_from_checkpoint": 'checkpointcheckpoint_ckpt_epoch_19.ckpt'})
     elif args_dict['dataset'] == "complex":
-        args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':100,
+        args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_complex_qa_closedbook", 'num_train_epochs':10,
                          'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
     elif args_dict['dataset'] == "qangaroo":
         args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_qangaroo_qa_closedbook", 'num_train_epochs':100,
                          'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
     elif args_dict['dataset'] == "lama":
         args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_lama_qa_closedbook", 'num_train_epochs':100,
-                         'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
+            'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3, 'max_input_length': 150, 'max_output_length': 30})
     elif args_dict['dataset'] == "search":
         args_dict.update({'output_dir': f"{args_dict['seed']}_{sub_name}_search_qa_closedbook", 'num_train_epochs':100,
-                         'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3})
+            'train_batch_size': 48, 'eval_batch_size': 48, 'learning_rate': 1e-3, 'max_input_length': 150, 'max_output_length': 30})
 
     args = argparse.Namespace(**args_dict)
     print(args_dict)
@@ -99,7 +102,7 @@ def main():
         filepath=args.output_dir, prefix="checkpoint", monitor="em_score", mode="max", save_top_k=1
     )
 
-    wandb_logger = WandbLogger(project='closedbook-T5')
+    wandb_logger = WandbLogger(project='closedbook-T5', name=args.wandb_name)
 
     ## If resuming from checkpoint, add an arg resume_from_checkpoint
     train_params = dict(
@@ -135,7 +138,7 @@ def main():
             dataset = Qangaroo_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
         elif args_dict['dataset'] == "lama":
             dataset = LAMA_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
-        elif args_dict['dataset'] == "search:
+        elif args_dict['dataset'] == "search":
             dataset = Search_QA_Closedbook(tokenizer, split, None, args.max_input_length, args.max_output_length, False)
 
         loader = DataLoader(dataset, batch_size=32, shuffle=False)

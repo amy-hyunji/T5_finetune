@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader, RandomSampler
 from pathlib import Path
 from dataloader import get_dataset
 from utils import calculate_scores
-from transformers import T5ForConditionalGeneration, T5Tokenizer, get_linear_schedule_with_warmup, Adafactor, AdamW
+from transformers import T5ForConditionalGeneration, T5Tokenizer, get_linear_schedule_with_warmup, Adafactor, AdamW, AutoModelWithLMHead
 
 class T5FineTuner(pl.LightningModule):
     def __init__(self, hparams):
@@ -15,6 +15,7 @@ class T5FineTuner(pl.LightningModule):
         self.hparams = hparams
 #         self.config = T5Config(hparams.model_name_or_path,dropout_rate=0.2)
         self.model = T5ForConditionalGeneration.from_pretrained(hparams.model_name_or_path)
+#        self.model = AutoModelWithLMHead.from_pretrained(hparams.model_name_or_path)
 #         self.model.dropout_rate=0.2
         self.tokenizer = T5Tokenizer.from_pretrained(hparams.tokenizer_name_or_path)
         

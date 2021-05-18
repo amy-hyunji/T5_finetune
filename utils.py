@@ -194,15 +194,15 @@ run LAMA/preprocess.py first
 
 
 def load_lama(split, add_all):
-    basepath = "./LAMA/"
+    basepath = "/mnt/hyunji/T5_finetune/LAMA/"
 
     ret_list = []
     if split == "train":
-        df = pd.read_csv(os.path.join(basepath, "train.csv"))
+        df = pd.read_csv(os.path.join(basepath, "only_one_train.csv"))
     elif split == "validation":
-        df = pd.read_csv(os.path.join(basepath, "val.csv"))
+        df = pd.read_csv(os.path.join(basepath, "only_one_val.csv"))
     elif split == "test":
-        df = pd.read_csv(os.path.join(basepath, "val.csv"))
+        df = pd.read_csv(os.path.join(basepath, "only_one_val.csv"))
     else:
         print("ERROR: check 'type_path` in LAMA_QA_closedbook")
         sys.exit(-1)
@@ -256,7 +256,7 @@ run SearchQA/preprocess.py first
 
 
 def load_search(split, add_all):
-    basepath = "/mnt/hyunji/T5-finetune/SearchQA"
+    basepath = "/mnt/hyunji/T5_finetune/SearchQA"
 
     if split == "train":
         df = pd.read_csv(os.path.join(basepath, "train.csv"))

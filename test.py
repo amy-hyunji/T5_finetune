@@ -13,18 +13,19 @@ from dataloader import (
     Complex_QA_Closedbook,
     LAMA_QA_Closedbook,
     Qangaroo_QA_Closedbook,
+    Search_QA_Closedbook
 )
 from model import T5FineTuner
 from utils import set_seed, LoggingCallback, exact_match_score
 from torch.utils.data import Dataset, DataLoader
 
 args_dict = dict(
-    model_name_or_path="101_t5-base_qangaroo_qa_closedbook/best_tfmr",
-    tokenizer_name_or_path="101_t5-base_qangaroo_qa_closedbook/best_tfmr",
-    output_name="101-qangaroo-t5-base",
+    model_name_or_path="/mnt/hyunji/T5_finetune/42_pretrain_ssm_t5-base-complexQA-ssm-epoch2_hotpot_qa_closedbook/best_tfmr",
+    tokenizer_name_or_path="/mnt/hyunji/T5_finetune/42_pretrain_ssm_t5-base-complexQA-ssm-epoch2_hotpot_qa_closedbook/best_tfmr",
+    output_name="t5-base-complexQA-hotpot",
     output_dir="",
     add_all=True,
-    dataset="qangaroo",
+    dataset="hotpot",
     max_input_length=60,
     max_output_length=20,
     freeze_encoder=False,
@@ -98,6 +99,18 @@ elif args_dict["dataset"] == "qangaroo":
         }
     )
 
+elif args_dict['dataset'] == "search":
+    args_dict.update(
+        {
+            "num_train_epochs": 100,
+            "train_batch_size": 48,
+            "eval_batch_size": 48,
+            "learning_rate": 1e-3,
+            "max_input_length": 150,
+            "max_output_length": 30,
+        }        
+    )
+
 args = argparse.Namespace(**args_dict)
 print(args_dict)
 
@@ -159,6 +172,16 @@ for split in ["test"]:
             False,
             args.add_all,
         )
+    elif args_dict['dataset'] == "search":
+        dataset = Search_QA_Closedbook(
+            tokenizer,
+            split,
+            None, 
+            args.max_input_length,
+            args.max_output_length,
+            False,
+            args.add_all,
+        )
 
     loader = DataLoader(dataset, batch_size=32, shuffle=False)
     it = iter(loader)
@@ -186,6 +209,10 @@ for split in ["test"]:
             for ids in outs
         ]
 
+        questions = []
+        for text in batch['question']:
+            questions.append(text)
+
         texts = [
             tokenizer.decode(
                 ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
@@ -212,7 +239,7 @@ for split in ["test"]:
             print("\nPredicted Answer from T5: %s" % dec[i])
             print("=====================================================================\n")
             """
-            retdict["question"].append(texts[i])
+            retdict["question"].append(questions[i])
             retdict["answer"].append(targets[i])
             retdict["predict"].append(dec[i])
             retdict["EM"].append(exact_match_score(dec[i], targets[i]))

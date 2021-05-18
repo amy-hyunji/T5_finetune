@@ -45,6 +45,24 @@ def overlap_btw_train_val(train_file, val_file, input_file):
     print(f"### Overlap in answer: {len(answer_intersect)}")
     print(" ")
 
+    ## check if there are cases with both question and answer dup
+    both_same = 0
+    train_dict = dict()
+    val_dict = dict()
+    both_same_dict = dict()
+    for (ques, ans) in zip(train_df['question'], train_df['answer']):
+        train_dict[ques] = ans
+    for (ques, ans) in zip(val_df['question'], val_df['answer']):
+        val_dict[ques] = ans
+
+    for ques in list(question_intersect):
+        train_ans = train_dict[ques]
+        val_ans = val_dict[ques]
+        if train_ans == val_ans:
+            both_same += 1
+            both_same_dict[ques] = train_ans
+    print(f"### Overlap btw train/val with BOTH ques & ans: {both_same}")
+
     overlap_btw_val_dict = dict()
     input_df = pd.read_csv(input_file)
     for answer in list(input_df["answer"]):
@@ -52,7 +70,7 @@ def overlap_btw_train_val(train_file, val_file, input_file):
             overlap_btw_val_dict[answer] += 1
         else:
             overlap_btw_val_dict[answer] = 0
-    return overlap_btw_val_dict, list(question_intersect), list(answer_intersect)
+    return overlap_btw_val_dict, list(question_intersect), list(answer_intersect), both_same_dict
 
 
 def get_EM(input_file):
@@ -70,28 +88,37 @@ def get_EM(input_file):
 overlap_btw_val_dict --> validation set에서 answer 당 몇 번 등장했는지 알려줌
 
 1. 1번만 등장한 애들 개수 대비 몇 개나 맞췄는가? (correct_only_one/only_one*100)
-2. count of 몇 번 등장 했는지 / em==1인 answer의 개수 --> 숫자가 높으면 val set에 많이 있는 애들을 잘 맞춘다,, (count_of/total_score*100)
+2. count of 몇 번 등장 했는지 / em==1인 answer의 개수 --> 숫자가 높으면 val set에 많이 있는 애들을 잘 맞춘다,, (count_of/num_of_count_of*100)
 3. 가장 count가 많은 애 찾고, 이와 관련된 답을 가진 question은 다 맞췄는지, 몇 개나 맞췄는지 확인 
 """
 
 
-def get_additional_EM(input_file, overlap_btw_val_dict, total_score):
+def get_additional_EM(input_file, overlap_btw_val_dict, total_score, both_same_dict):
     df = pd.read_csv(input_file)
 
     correct_only_one = 0
     only_one = 0
+    not_only_one = 0
     count_of = 0
+    num_of_count_of = 0
     highest_count = 0
     highest_answer = {}
     total_highest_count = 0  # just in case the all the questions in with highest count of answer all failed
+    both_same_ques = list(both_same_dict.keys())
+    both_same_correct = 0
 
-    for (ans, em) in zip(df["answer"], df["EM"]):
+    for (ques, ans, em) in zip(df['question'], df["answer"], df["EM"]):
+        if (em == 1) and (ques in both_same_ques) and (ans == both_same_dict[ques]):
+            both_same_correct += 1
         if overlap_btw_val_dict[ans] == 1:
             only_one += 1
             if em == 1:
                 correct_only_one += 1
+        else:
+            not_only_one += 1
         if em == 1:
             count_of += overlap_btw_val_dict[ans]
+            num_of_count_of += 1
             if overlap_btw_val_dict[ans] > highest_count:
                 highest_count = overlap_btw_val_dict[ans]
                 highest_answer = {ans: 1}
@@ -103,16 +130,21 @@ def get_additional_EM(input_file, overlap_btw_val_dict, total_score):
         if overlap_btw_val_dict[ans] > total_highest_count:
             total_highest_count = overlap_btw_val_dict[ans]
 
+    print(f"[# of correct with ques/ans both overlap and train/val]: {both_same_correct} out of {len(both_same_ques)}")
     print(
-        f"[Task1] correct_only_one: {correct_only_one}   only_one: {only_one}    %: {round(correct_only_one/only_one*100, 3)}"
+        f"[Task1] correct_only_one: {correct_only_one}   only_one: {only_one}    not_only_one: {not_only_one}   %: {round(correct_only_one/only_one*100, 3)}"
     )
     print(
-        f"[Task2] count_of: {count_of}   total_score: {total_score}      %: {round(count_of/total_score*100, 3)}"
+        f"[Task2] count_of: {count_of}   num_of_count_of: {num_of_count_of}      avg: {round(count_of/num_of_count_of, 3)}"
     )
     print(f"[Task3] highest count from total: {total_highest_count}")
     print(
         f"[Task3] highest count from the correct ones: {highest_count} and # of corrects: \n{highest_answer}"
     )
+    avg_highest_correct = 0
+    for ans in highest_answer.keys():
+        avg_highest_correct += highest_answer[ans]
+    print(f"[Task3] avg: {round(avg_highest_correct/len(highest_answer.keys()), 3)}")
 
 
 def get_intersect_EM(input_file, intersect_list, type):
@@ -148,7 +180,7 @@ if __name__ == "__main__":
     # overlap_btw_val_dict = dict containing number of occurrence in val answe
     # question_intersect = list containing intersection between train/val question
     # answer_intersect = list containing intersection between train/val answer
-    overlap_btw_val_dict, question_intersect, answer_intersect = overlap_btw_train_val(
+    overlap_btw_val_dict, question_intersect, answer_intersect, both_same_dict = overlap_btw_train_val(
         train_file, val_file, input_file
     )
 
@@ -158,7 +190,7 @@ if __name__ == "__main__":
     print(" ")
     # 3. additional EM
     print("=== get_additional_EM ===")
-    get_additional_EM(input_file, overlap_btw_val_dict, score)
+    get_additional_EM(input_file, overlap_btw_val_dict, score, both_same_dict)
     print(" ")
     print("=== get_intersect_EM===")
     get_intersect_EM(input_file, question_intersect, "question")
