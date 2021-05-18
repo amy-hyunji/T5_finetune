@@ -14,7 +14,7 @@ from model import T5FineTuner
 from utils import set_seed, LoggingCallback
 from knockknock import slack_sender
 
-webhook_url = "https://hooks.slack.com/services/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"
+webhook_url = 
 @slack_sender(webhook_url=webhook_url, channel="train-chat")
 def main():
     logger = logging.getLogger(__name__)
